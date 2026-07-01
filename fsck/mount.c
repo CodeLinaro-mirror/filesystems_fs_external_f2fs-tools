@@ -902,6 +902,8 @@ int f2fs_ra_meta_pages(struct f2fs_sb_info *sbi, block_t start, int nrpages,
 		} else {
 			dev_readahead(start_blk << F2FS_BLKSIZE_BITS,
 						len << F2FS_BLKSIZE_BITS);
+			start_blk = blkaddr;
+			len = 1;
 		}
 	}
 out:
