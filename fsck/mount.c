@@ -2677,7 +2677,8 @@ static int build_sit_entries(struct f2fs_sb_info *sbi)
 		for (; segno < end && segno < MAIN_SEGS(sbi); segno++) {
 			se = &sit_i->sentries[segno];
 
-			get_current_sit_page(sbi, segno, sit_blk);
+			if (SIT_ENTRY_OFFSET(sit_i, segno) == 0)
+				get_current_sit_page(sbi, segno, sit_blk);
 			sit = sit_blk->entries[SIT_ENTRY_OFFSET(sit_i, segno)];
 
 			check_block_count(sbi, segno, &sit);
