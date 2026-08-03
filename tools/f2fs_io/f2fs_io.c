@@ -2551,6 +2551,51 @@ static void do_test_lookup_perf(int argc, char **argv, const struct cmd_desc *cm
 	exit(0);
 }
 
+#define dev_alias_desc "device alias control"
+#define dev_alias_help						\
+"f2fs_io dev_alias [release|reserve|status] [file]\n\n"			\
+"release, reserve or status a range of device alias given the file\n"
+
+static void do_dev_alias(int argc, char **argv, const struct cmd_desc *cmd)
+{
+	int fd, ret;
+
+	if (argc != 3) {
+		fputs("Excess arguments\n\n", stderr);
+		fputs(cmd->cmd_help, stderr);
+		exit(1);
+	}
+
+	fd = xopen(argv[2], O_RDWR, 0);
+
+	if (!strcmp(argv[1], "reserve")) {
+		ret = ioctl(fd, F2FS_IOC_RESERVE_DEV_ALIAS);
+		if (ret < 0)
+			die_errno("F2FS_IOC_RESERVE_DEV_ALIAS failed");
+		printf("%s device alias range of %s\n", argv[1], argv[2]);
+	} else if (!strcmp(argv[1], "release")) {
+		ret = ioctl(fd, F2FS_IOC_RELEASE_DEV_ALIAS);
+		if (ret < 0)
+			die_errno("F2FS_IOC_RELEASE_DEV_ALIAS failed");
+		printf("%s device alias range of %s\n", argv[1], argv[2]);
+	} else if (!strcmp(argv[1], "status")) {
+		u32 status = 0;
+
+		ret = ioctl(fd, F2FS_IOC_GET_DEV_ALIAS_STATUS, &status);
+		if (ret < 0)
+			die_errno("F2FS_IOC_GET_DEV_ALIAS_STATUS failed");
+
+		printf("device alias status of %s: %s\n", argv[2],
+			status == F2FS_DEV_ALIAS_STATUS_RESERVED ? "reserved" : "released");
+	} else {
+		fputs("Wrong request type\n\n", stderr);
+		fputs(cmd->cmd_help, stderr);
+		exit(1);
+	}
+
+	exit(0);
+}
+
 #define freeze_desc "freeze filesystem"
 #define freeze_help "f2fs_io freeze [directory_path]\n\n"
 
@@ -2645,6 +2690,7 @@ const struct cmd_desc cmd_list[] = {
 	CMD(get_advise),
 	CMD(ioprio),
 	CMD(ftruncate),
+	CMD(dev_alias),
 	CMD(test_create_perf),
 	CMD(test_lookup_perf),
 	CMD(freeze),
