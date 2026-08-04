@@ -3077,6 +3077,11 @@ int find_next_free_block(struct f2fs_sb_info *sbi, u64 *to, int left,
 	u64 end_blkaddr = (get_sb(segment_count_main) <<
 			get_sb(log_blocks_per_seg)) + get_sb(main_blkaddr);
 
+	if (want_type < 0 || want_type >= NO_CHECK_TYPE) {
+		ASSERT_MSG("Invalid segment type %d for block allocation", want_type);
+		return -EINVAL;
+	}
+
 	if (c.zoned_model == F2FS_ZONED_HM && !new_sec) {
 		struct curseg_info *curseg = CURSEG_I(sbi, want_type);
 		unsigned int segs_per_zone = sbi->segs_per_sec * sbi->secs_per_zone;

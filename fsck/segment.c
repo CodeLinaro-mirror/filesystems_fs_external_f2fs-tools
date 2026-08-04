@@ -770,15 +770,32 @@ int update_block(struct f2fs_sb_info *sbi, void *buf, u32 *blkaddr,
 	struct seg_entry *se;
 	struct f2fs_summary sum;
 	u64 new_blkaddr, old_blkaddr = *blkaddr, offset;
-	int ret, type;
+	int ret, type, sum_type;
 
 	if (c.zoned_model != F2FS_ZONED_HM)
 		return dev_write_block(buf, old_blkaddr, WRITE_LIFE_NONE);
+
+	sum_type = get_sum_entry(sbi, old_blkaddr, &sum);
 
 	/* update sit bitmap & valid_blocks && se->type for old block*/
 	se = get_seg_entry(sbi, GET_SEGNO(sbi, old_blkaddr));
 	offset = OFFSET_IN_SEG(sbi, old_blkaddr);
 	type = se->type;
+	if (type < 0 || type >= NO_CHECK_TYPE) {
+		int fixed_type = (sum_type == SEG_TYPE_NODE ||
+				sum_type == SEG_TYPE_CUR_NODE) ?
+				CURSEG_HOT_NODE : CURSEG_HOT_DATA;
+
+		ASSERT_MSG("Invalid SIT segment type %d at blkaddr 0x%"PRIx64,
+				type, old_blkaddr);
+
+		if (!c.fix_on)
+			return -EINVAL;
+
+		FIX_MSG("Correct invalid segment type %d -> %d for blkaddr 0x%"PRIx64"\n",
+				type, fixed_type, old_blkaddr);
+		se->type = type = fixed_type;
+	}
 	se->valid_blocks--;
 	f2fs_clear_bit(offset, (char *)se->cur_valid_map);
 	if (need_fsync_data_record(sbi))
@@ -811,7 +828,6 @@ int update_block(struct f2fs_sb_info *sbi, void *buf, u32 *blkaddr,
 	f2fs_set_sit_bitmap(sbi, new_blkaddr);
 
 	/* update SSA */
-	get_sum_entry(sbi, old_blkaddr, &sum);
 	update_sum_entry(sbi, new_blkaddr, &sum);
 
 	if (IS_DATASEG(type)) {
