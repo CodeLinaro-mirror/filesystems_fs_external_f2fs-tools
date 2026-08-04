@@ -1667,7 +1667,8 @@ static block_t f2fs_add_default_dentry_lpf(void)
 	}
 
 	add_dentry(dent_blk, &didx, ".", c.lpf_ino, F2FS_FT_DIR);
-	add_dentry(dent_blk, &didx, "..", c.lpf_ino, F2FS_FT_DIR);
+	add_dentry(dent_blk, &didx, "..",
+		   le32_to_cpu(sb->root_ino), F2FS_FT_DIR);
 
 	data_blkaddr = alloc_next_free_block(CURSEG_HOT_DATA);
 
