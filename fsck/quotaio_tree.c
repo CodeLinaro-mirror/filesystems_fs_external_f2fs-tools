@@ -667,7 +667,7 @@ int qtree_scan_dquots(struct quota_handle *h,
 		return -1;
 
 	dquot->dq_h = h;
-	if (quota_get_memzero((info->dqi_blocks + 7) >> 3, &bitmap))
+	if (quota_get_memzero(((size_t)info->dqi_blocks + 7) >> 3, &bitmap))
 		goto out;
 	if (report_tree(dquot, QT_TREEOFF, 0, bitmap, &entries, process_dquot,
 				data))

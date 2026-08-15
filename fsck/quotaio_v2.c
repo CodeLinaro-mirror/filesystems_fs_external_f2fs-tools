@@ -206,6 +206,12 @@ static int v2_init_io(struct quota_handle *h, enum quota_type qtype)
 		f2fs_filesize_update(qf->sbi, qf->ino, filesize);
 	}
 
+	if (filesize > (1ULL << 31)) {
+		log_err("Quota inode %u corrupted: file size %" PRIu64
+			" too large", h->qh_qf.ino, filesize);
+		return -1;
+	}
+
 	if ((info->dqi_qtree.dqi_blocks >
 			(filesize + QT_BLKSIZE - 1) >> QT_BLKSIZE_BITS)) {
 		log_err("Quota inode %u corrupted: file size %" PRId64 "; "
