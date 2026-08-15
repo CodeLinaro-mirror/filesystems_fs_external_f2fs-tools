@@ -1038,7 +1038,9 @@ check_next:
 			unsigned int isize =
 				le16_to_cpu(node_blk->i.i_extra_isize);
 			if (time_to_inject(FAULT_INODE) ||
-					(isize > 4 * DEF_ADDRS_PER_INODE)) {
+					(isize < F2FS_MIN_EXTRA_ATTR_SIZE) ||
+					(isize > F2FS_TOTAL_EXTRA_ATTR_SIZE) ||
+					(isize % sizeof(__le32))) {
 				ASSERT_MSG("[0x%x] wrong i_extra_isize=0x%x",
 						nid, isize);
 				if (c.fix_on) {

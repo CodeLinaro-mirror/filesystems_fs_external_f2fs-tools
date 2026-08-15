@@ -979,6 +979,7 @@ static_assert(sizeof(struct node_footer) == 24, "");
 
 #define F2FS_EXTRA_ISIZE_OFFSET				\
 	offsetof(struct f2fs_inode, i_extra_isize)
+#define F2FS_MIN_EXTRA_ATTR_SIZE	(sizeof(__le32))
 #define F2FS_TOTAL_EXTRA_ATTR_SIZE			\
 	(offsetof(struct f2fs_inode, i_extra_end) - F2FS_EXTRA_ISIZE_OFFSET)
 
