@@ -191,6 +191,7 @@ static void f2fs_parse_options(int argc, char *argv[])
 	int32_t option=0;
 	int val;
 	char *token;
+	bool is_alias;
 	int dev_num;
 
 	while ((option = getopt_long(argc,argv,option_string,long_opts,NULL)) != EOF) {
@@ -218,6 +219,8 @@ static void f2fs_parse_options(int argc, char *argv[])
 				mkfs_usage();
 			}
 
+			is_alias = (strchr(optarg, '@') != NULL);
+
 			token = strtok(optarg, "@");
 			if (strlen(token) > MAX_PATH_LEN) {
 				MSG(0, "Error: device path should be equal or "
@@ -226,21 +229,21 @@ static void f2fs_parse_options(int argc, char *argv[])
 				mkfs_usage();
 			}
 			c.devices[dev_num].path = strdup(token);
-			token = strtok(NULL, "");
-			if (token) {
-				if (strlen(token) > MAX_PATH_LEN) {
-					MSG(0, "Error: alias_filename should "
-						"be equal or less than %d "
-						"characters\n", MAX_PATH_LEN);
-					mkfs_usage();
-				}
-				if (strchr(token, '/')) {
-					MSG(0, "Error: alias_filename has "
-						"invalid '/' character\n");
+
+			if (is_alias) {
+				char *dev_name = strrchr(token, '/');
+
+				dev_name = dev_name ? dev_name + 1 : token;
+
+				token = strtok(NULL, "");
+				if (token && strcmp(token, dev_name)) {
+					MSG(0,
+						"Error: alias_filename (\"%s\") must match device name (\"%s\")\n",
+						token, dev_name);
 					mkfs_usage();
 				}
 				c.devices[dev_num].alias_filename =
-					strdup(token);
+					strdup(dev_name);
 				if (!c.aliased_devices)
 					c.feature |= F2FS_FEATURE_DEVICE_ALIAS;
 				c.aliased_devices++;

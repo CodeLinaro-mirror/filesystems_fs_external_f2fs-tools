@@ -121,10 +121,12 @@ Currently, the kernel is only able to mount f2fs filesystems where the
 block size matches the page size.
 The default value is 4096.
 .TP
-.BI \-c " device-list"
+.BI \-c " device_name[@alias_filename]"
 Build f2fs with these additional devices, so that the user can
 see all the devices as one big volume.
 Supports up to 7 devices except meta device.
+If '@' or '@alias_filename' is given, the device is configured as a device alias.
+Note that alias_filename must match the device name.
 .TP
 .BI \-d " debug-level"
 Specify the level of debugging options.
