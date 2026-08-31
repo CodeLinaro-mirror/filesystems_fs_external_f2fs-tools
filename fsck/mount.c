@@ -4222,7 +4222,7 @@ out:
 	print_ckpt_info(sbi);
 
 	if (c.quota_fix) {
-		if (get_cp(ckpt_flags) & CP_QUOTA_NEED_FSCK_FLAG)
+		if ((get_cp(ckpt_flags) & CP_QUOTA_NEED_FSCK_FLAG) && !c.dry_run)
 			c.fix_on = 1;
 	}
 	if (c.layout)

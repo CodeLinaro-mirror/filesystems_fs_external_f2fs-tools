@@ -2411,7 +2411,7 @@ int fsck_chk_quota_files(struct f2fs_sb_info *sbi)
 		}
 
 		/* Something is wrong */
-		if (c.fix_on) {
+		if (c.fix_on && !c.dry_run) {
 			DBG(0, "Fixing Quota file ([%3d] ino [0x%x])\n",
 							qtype, ino);
 			fsck_disconnect_file(sbi, ino, true);
@@ -2424,6 +2424,9 @@ int fsck_chk_quota_files(struct f2fs_sb_info *sbi)
 			} else {
 				ASSERT_MSG("Unable to write quota file");
 			}
+		} else if (c.dry_run) {
+			MSG(0, "Info: Quota file is inconsistent (dry-run, repair skipped)\n");
+			ret = 0;
 		} else {
 			ASSERT_MSG("Quota file is missing or invalid"
 					" quota file content found.");
@@ -3709,7 +3712,7 @@ void fsck_chk_and_fix_write_pointers(struct f2fs_sb_info *sbi)
 	if (c.zoned_model != F2FS_ZONED_HM)
 		return;
 
-	if (c.fix_on) {
+	if (c.fix_on && !c.dry_run) {
 		flush_nat_journal_entries(sbi);
 		flush_sit_journal_entries(sbi);
 
